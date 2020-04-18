@@ -6,12 +6,12 @@
 #include <mutex>
 #include <vector>
 
+#include "TrafficLight.h"
 #include "TrafficObject.h"
 
 // forward declarations to avoid include cycle
 class Street;
 class Vehicle;
-class TrafficLight;
 
 // auxiliary class to queue and dequeue waiting vehicles in a thread-safe manner
 class WaitingVehicles {
