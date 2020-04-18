@@ -22,7 +22,13 @@ class Vehicle;
 template <class T>
 class MessageQueue {
  public:
+  void send(TrafficLightPhase&& msg);
+  TrafficLightPhase receive();
+
  private:
+  std::deque _queue;
+  std::condition_variable _condtion;
+  std::mutex _mutex;
 };
 
 // FP.1 : Define a class "TrafficLight" which is a child class of TrafficObject.
