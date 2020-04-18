@@ -33,7 +33,6 @@ void MessageQueue<T>::send(T &&msg) {
 /* Implementation of class "TrafficLight" */
 
 TrafficLight::TrafficLight() { _currentPhase = TrafficLightPhase::red; }
-TrafficLight::~TrafficLight(){}
 
 void TrafficLight::waitForGreen() {
   // FP.5b : add the implementation of the method waitForGreen, in which an
@@ -59,6 +58,8 @@ void TrafficLight::simulate() {
   // FP.2b : Finally, the private method "cycleThroughPhases" should be
   //   started in a thread when the public method "simulate" is called.To do
   //   this, use the thread queue in the base class.
+
+  threads.emplace_back(std::thread(&TrafficLight::cycleThroughPhases, this));
 }
 
 // virtual function which is executed in a thread

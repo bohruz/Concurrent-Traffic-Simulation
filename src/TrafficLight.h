@@ -7,9 +7,6 @@
 
 #include "TrafficObject.h"
 
-// forward declaration to avoid include cycle
-class Intersection;
-
 enum TrafficLightPhase { red, green };
 
 // forward declarations to avoid include cycle
@@ -46,13 +43,11 @@ class TrafficLight : public TrafficObject {
  public:
   // constructor / desctructor
   TrafficLight();
-  ~TrafficLight();
 
   // getters / setters
   TrafficLightPhase getCurrentPhase();
 
   // typical behaviour methods
-
   void waitForGreen();
   void simulate();
 
