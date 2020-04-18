@@ -7,6 +7,7 @@
 #include <thread>
 
 #include "Street.h"
+#include "TrafficLight.h"
 #include "Vehicle.h"
 
 /* Implementation of class "WaitingVehicles" */
@@ -92,6 +93,10 @@ void Intersection::addVehicleToQueue(std::shared_ptr<Vehicle> vehicle) {
   // TrafficLight::waitForGreen to block the execution until the traffic light
   // turns green.
 
+  if (_trafficLight.getCurrentPhase() == TrafficLightPhase::red) {
+    _trafficLight.waitForGreen();
+  }
+
   lck.unlock();
 }
 
@@ -115,6 +120,7 @@ void Intersection::simulate()  // using threads + promises/futures + exceptions
   // FP.6a : In Intersection.h, add a private member _trafficLight of type
   // TrafficLight. At this position, start the simulation of _trafficLight.
   // launch vehicle queue processing in a thread
+  _trafficLight.simulate();
 
   threads.emplace_back(std::thread(&Intersection::processVehicleQueue, this));
 }
