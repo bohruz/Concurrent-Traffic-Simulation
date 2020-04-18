@@ -22,11 +22,11 @@ class Vehicle;
 template <class T>
 class MessageQueue {
  public:
-  void send(TrafficLightPhase&& msg);
-  TrafficLightPhase receive();
+  void send(T&& msg);
+  T receive();
 
  private:
-  std::deque _queue;
+  std::deque<T> _queue;
   std::condition_variable _condtion;
   std::mutex _mutex;
 };

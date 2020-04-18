@@ -11,6 +11,13 @@ T MessageQueue<T>::receive() {
   //   _condition.wait() to wait for and receive new messages and pull them from
   //   the queue using move semantics. The received object should then be
   //   returned by the receive function.
+
+  std::unique_lock<std::mutex> lck(_mutex);
+  _condtion.wait(lck, [this] { return !_queue.empty(); });
+  auto msg = std::move(_queue.front());
+  _queue.pop_front();
+
+  return msg;
 }
 
 template <typename T>
@@ -19,56 +26,71 @@ void MessageQueue<T>::send(T &&msg) {
   // std::lock_guard<std::mutex> as well as _condition.notify_one() to add a new
   // message to the queue and afterwards send a notification.}
 
-  /* Implementation of class "TrafficLight" */
+  std::lock_guard<std::mutex> lck(_mutex);
+  _queue.push_back(std::move(msg));
+  _condtion.notify_one();
+}
+/* Implementation of class "TrafficLight" */
 
-  TrafficLight::TrafficLight() { _currentPhase = TrafficLightPhase::red; }
+TrafficLight::TrafficLight() { _currentPhase = TrafficLightPhase::red; }
 
-  void TrafficLight::waitForGreen() {
-    // FP.5b : add the implementation of the method waitForGreen, in which an
-    // infinite while - loop runs and repeatedly calls the receive function on
-    // the message queue. Once it receives TrafficLightPhase::green, the method
-    // returns.
-  }
+void TrafficLight::waitForGreen() {
+  // FP.5b : add the implementation of the method waitForGreen, in which an
+  // infinite while - loop runs and repeatedly calls the receive function on
+  // the message queue. Once it receives TrafficLightPhase::green, the method
+  // returns.
 
-  TrafficLightPhase TrafficLight::getCurrentPhase() { return _currentPhase; }
+  using namespace std::chrono;
+  using namespace std::chrono_literals;
 
-  void TrafficLight::simulate() {
-    // FP.2b : Finally, the private method "cycleThroughPhases" should be
-    //   started in a thread when the public method "simulate" is called.To do
-    //   this, use the thread queue in the base class.
-  }
-
-  // virtual function which is executed in a thread
-  void TrafficLight::cycleThroughPhases() {
-    // FP.2a : Implement the function with an infinite loop that measures the
-    // time between two loop cycles and toggles the current phase of the traffic
-    // light between red and green and sends an update method to the message
-    // queue using move semantics. The cycle duration should be a random value
-    // between 4 and 6 seconds Also, the while-loop should use
-    // std::this_thread::sleep_for to wait 1ms between two cycles.
-
-    using namespace std::chrono;
-    using namespace std::chrono_literals;
-
-    std::random_device device;
-    std::mt19937 randomEngine{device()};
-    std::uniform_int_distribution<std::mt19937::result_type>
-        durationDistribution{4, 6};
-
-    auto cycleDuration = seconds{durationDistribution(randomEngine)};
-    auto updateTime = high_resolution_clock::now();
-
-    while (true) {
-      auto measure = high_resolution_clock::now() - updateTime;
-
-      if (measure >= cycleDuration) {
-        _currentPhase = _currentPhase == TrafficLightPhase::green
-                            ? TrafficLightPhase::red
-                            : TrafficLightPhase::green;
-
-        _messageQueue.send(std::move(_currentPhase));
-        updateTime = high_resolution_clock::now()
-      }
-      std::this_thread::sleep_for(1ms);
+  while (true) {
+    std::this_thread::sleep_for(1ms);
+    auto currentState = _messageQueue.receive();
+    if (currentState == TrafficLightPhase::green) {
+      return;
     }
   }
+}
+
+TrafficLightPhase TrafficLight::getCurrentPhase() { return _currentPhase; }
+
+void TrafficLight::simulate() {
+  // FP.2b : Finally, the private method "cycleThroughPhases" should be
+  //   started in a thread when the public method "simulate" is called.To do
+  //   this, use the thread queue in the base class.
+}
+
+// virtual function which is executed in a thread
+void TrafficLight::cycleThroughPhases() {
+  // FP.2a : Implement the function with an infinite loop that measures the
+  // time between two loop cycles and toggles the current phase of the traffic
+  // light between red and green and sends an update method to the message
+  // queue using move semantics. The cycle duration should be a random value
+  // between 4 and 6 seconds Also, the while-loop should use
+  // std::this_thread::sleep_for to wait 1ms between two cycles.
+
+  using namespace std::chrono;
+  using namespace std::chrono_literals;
+
+  std::random_device device;
+  std::mt19937 randomEngine{device()};
+  std::uniform_int_distribution<std::mt19937::result_type> durationDistribution{
+      4, 6};
+
+  auto cycleDuration = seconds{durationDistribution(randomEngine)};
+  auto updateTime = high_resolution_clock::now();
+
+  while (true) {
+    auto measure = high_resolution_clock::now() - updateTime;
+
+    if (measure >= cycleDuration) {
+      _currentPhase = _currentPhase == TrafficLightPhase::green
+                          ? TrafficLightPhase::red
+                          : TrafficLightPhase::green;
+
+      _messageQueue.send(std::move(_currentPhase));
+      updateTime = high_resolution_clock::now();
+    }
+    std::this_thread::sleep_for(1ms);
+  }
+}
