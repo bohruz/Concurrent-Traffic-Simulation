@@ -47,25 +47,28 @@ void MessageQueue<T>::send(T &&msg) {
     // between 4 and 6 seconds Also, the while-loop should use
     // std::this_thread::sleep_for to wait 1ms between two cycles.
 
+    using namespace std::chrono;
+    using namespace std::chrono_literals;
+
     std::random_device device;
-    std::mt19937 randNumber(device());
-    std::uniform_int_distribution<std::mt19937::result_type> duration(4, 6);
-    float cycleDuration = duration(randNumber);
-    std::chrono::time_point<std::chrono::system_clock> updateTime =
-        std::chrono::system_clock::now();
+    std::mt19937 randomEngine{device()};
+    std::uniform_int_distribution<std::mt19937::result_type>
+        durationDistribution{4, 6};
+
+    auto cycleDuration = seconds{durationDistribution(randomEngine)};
+    auto updateTime = high_resolution_clock::now();
 
     while (true) {
-      auto measureTime = std::chrono::duration_cast<std::chrono::seconds>(
-                             std::chrono::system_clock::now() - updateTime)
-                             .count();
-      if (measureTime >= cycleDuration) {
+      auto measure = high_resolution_clock::now() - updateTime;
+
+      if (measure >= cycleDuration) {
         _currentPhase = _currentPhase == TrafficLightPhase::green
                             ? TrafficLightPhase::red
                             : TrafficLightPhase::green;
 
         _messageQueue.send(std::move(_currentPhase));
-        updateTime = std::chrono::system_clock::now()
+        updateTime = high_resolution_clock::now()
       }
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      std::this_thread::sleep_for(1ms);
     }
   }
