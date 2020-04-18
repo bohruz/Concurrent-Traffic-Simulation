@@ -28,7 +28,6 @@ class WaitingVehicles {
       _vehicles;  // list of all vehicles waiting to enter this intersection
   std::vector<std::promise<void>> _promises;  // list of associated promises
   std::mutex _mutex;
-  TrafficLight _trafficLight;
 };
 
 class Intersection : public TrafficObject {
@@ -61,6 +60,7 @@ class Intersection : public TrafficObject {
                          // waiting to enter the intersection
   bool _isBlocked;  // flag indicating wether the intersection is blocked by a
                     // vehicle
+  TrafficLight _trafficLight;
 };
 
 #endif
