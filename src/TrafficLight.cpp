@@ -12,9 +12,10 @@ T MessageQueue<T>::receive() {
   //   the queue using move semantics. The received object should then be
   //   returned by the receive function.
 
-  std::unique_lock<std::mutex> lck(_mutex);
-  _condtion.wait(lck, [this] { return !_queue.empty(); });
-  auto msg = std::move(_queue.front());
+  std::unique_lock<std::mutex> uLock(_mutex);
+  _condtion.wait(uLock, [this] { return !_queue.empty(); });
+
+  T msg = std::move(_queue.front());
   _queue.pop_front();
 
   return msg;
@@ -26,7 +27,7 @@ void MessageQueue<T>::send(T &&msg) {
   // std::lock_guard<std::mutex> as well as _condition.notify_one() to add a new
   // message to the queue and afterwards send a notification.}
 
-  std::lock_guard<std::mutex> lck(_mutex);
+  std::lock_guard<std::mutex> uLock(_mutex);
   _queue.push_back(std::move(msg));
   _condtion.notify_one();
 }
@@ -44,15 +45,18 @@ void TrafficLight::waitForGreen() {
   using namespace std::chrono_literals;
 
   while (true) {
-    std::this_thread::sleep_for(1ms);
     auto currentState = _messageQueue.receive();
     if (currentState == TrafficLightPhase::green) {
-      return;
+      break;
     }
+    std::this_thread::sleep_for(1ms);
   }
 }
 
-TrafficLightPhase TrafficLight::getCurrentPhase() { return _currentPhase; }
+TrafficLightPhase TrafficLight::getCurrentPhase() {
+  std::lock_guard<std::mutex> uLock(_mutex);
+  return _currentPhase;
+}
 
 void TrafficLight::simulate() {
   // FP.2b : Finally, the private method "cycleThroughPhases" should be

@@ -53,6 +53,7 @@ class TrafficLight : public TrafficObject {
 
  private:
   // typical behaviour methods
+  void cycleThroughPhases();
 
   // FP.4b : create a private member of type MessageQueue for messages of type
   // TrafficLightPhase and use it within the infinite loop to push each new
@@ -60,7 +61,6 @@ class TrafficLight : public TrafficObject {
   // semantics.
 
   MessageQueue<TrafficLightPhase> _messageQueue;
-  void cycleThroughPhases();
   std::condition_variable _condition;
   std::mutex _mutex;
   TrafficLightPhase _currentPhase;
