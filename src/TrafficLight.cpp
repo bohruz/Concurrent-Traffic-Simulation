@@ -51,7 +51,8 @@ void MessageQueue<T>::send(T &&msg) {
     std::mt19937 randNumber(device());
     std::uniform_int_distribution<std::mt19937::result_type> duration(4, 6);
     float cycleDuration = duration(randNumber);
-    auto updateTime = std::chrono::system_clock::now();
+    std::chrono::time_point<std::chrono::system_clock> updateTime =
+        std::chrono::system_clock::now();
 
     while (true) {
       auto measureTime = std::chrono::duration_cast<std::chrono::seconds>(
