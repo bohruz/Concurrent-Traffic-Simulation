@@ -11,6 +11,7 @@
 // forward declarations to avoid include cycle
 class Street;
 class Vehicle;
+class TrafficLigth;
 
 // auxiliary class to queue and dequeue waiting vehicles in a thread-safe manner
 class WaitingVehicles {
@@ -27,6 +28,7 @@ class WaitingVehicles {
       _vehicles;  // list of all vehicles waiting to enter this intersection
   std::vector<std::promise<void>> _promises;  // list of associated promises
   std::mutex _mutex;
+  TrafficLigth _trafficLight;
 };
 
 class Intersection : public TrafficObject {

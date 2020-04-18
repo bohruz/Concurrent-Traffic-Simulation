@@ -7,6 +7,9 @@
 
 #include "TrafficObject.h"
 
+// forward declaration to avoid include cycle
+class Intersection;
+
 enum TrafficLightPhase { red, green };
 
 // forward declarations to avoid include cycle
