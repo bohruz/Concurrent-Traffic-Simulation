@@ -46,4 +46,25 @@ void MessageQueue<T>::send(T &&msg) {
     // queue using move semantics. The cycle duration should be a random value
     // between 4 and 6 seconds Also, the while-loop should use
     // std::this_thread::sleep_for to wait 1ms between two cycles.
+
+    std::random_device device;
+    std::mt19937 randNumber(device());
+    std::uniform_int_distribution<std::mt19937::result_type> duration(4, 6);
+    float cycleDuration = duration(randNumber);
+    auto updateTime = std::chrono::system_clock::now();
+
+    while (true) {
+      auto measureTime = std::chrono::duration_cast<std::chrono::seconds>(
+                             std::chrono::system_clock::now() - updateTime)
+                             .count();
+      if (measureTime >= cycleDuration) {
+        _currentPhase = _currentPhase == TrafficLightPhase::green
+                            ? TrafficLightPhase::red
+                            : TrafficLightPhase::green;
+
+        _messageQueue.send(std::move(_currentPhase));
+        updateTime = std::chrono::system_clock::now()
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
   }
