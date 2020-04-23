@@ -4,7 +4,7 @@
 
 In this project I developed a multi thread traffic simulator in which vehicles are moving along streets and crossing intersections. Each intersection is equipped with a traffic light, traffic lights are needed for road safety. In this project I built a suitable and thread-safe communication protocol between vehicles and intersections to complete the simulation. 
 
-For this project I used Modern C++ and concurrency safe guards like:
+For this project I used Modern C++ with concurrency safe guards like:
 * Mutexes
 * Locks
 * Message Queues
